@@ -1,6 +1,6 @@
 set :domain, "emab.subtree.se"
 set :application, "app"
-set :deploy_to, "/home/emab/emab.subtree.se"
+set :deploy_to, "/home/emab/emab-campaigns-app"
 
 set :user, "emab"
 set :use_sudo, false
