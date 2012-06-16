@@ -1,4 +1,5 @@
 require 'sinatra'
+
 get '/' do
   "Worked on dreamhost"
 end
