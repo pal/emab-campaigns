@@ -42,4 +42,27 @@ CMD
       run "find #{asset_paths} -exec touch -t #{stamp} {} ';'; true", :env => { "TZ" => "UTC" }
     end
   end
+
+  task :symlink_dreamhost_domain, :roles => :app do
+	 	Capistrano::CLI.ui.say("*"*70)
+	 	Capistrano::CLI.ui.say("WARNING! This will erase EVERYTHING stored in /home/#{user}/#{domain}")
+	 	Capistrano::CLI.ui.say("Are you absolutely sure you wish to continue?")
+	 	Capistrano::CLI.ui.say("There is no way to undelete if you continue!")
+	 	Capistrano::CLI.ui.say("*"*70)
+		
+		agree = Capistrano::CLI.ui.agree("Continue (Yes, [No]) ") do |q|
+			q.default = 'n'
+		end
+		if agree
+		 	Capistrano::CLI.ui.say("Removing old data")
+	    run "#{try_sudo} rm -rf /home/#{user}/#{domain}"
+    	run "#{try_sudo} ln -s #{current_path} #{domain}"
+		else
+		 	Capistrano::CLI.ui.say("Delete aborted")
+		end
+  end
+	  	
+	after "deploy:setup", "deploy:symlink_dreamhost_domain"
+
+
 end
