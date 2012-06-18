@@ -6,9 +6,11 @@ set :user, "emab"
 set :use_sudo, false
 
 set :scm, :git
-set :repository, "git@github.com:pal/emab-campaigns.git"
+#set :repository, "git@github.com:pal/emab-campaigns.git" # only when remote has ok github key
+set :repository, "https://github.com/pal/emab-campaigns.git" # ok for public projects
 set :branch, 'master'
 set :git_shallow_clone, 1
+set :ssh_options, {:forward_agent => true}
 
 role :web, domain
 role :app, domain
