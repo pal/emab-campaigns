@@ -1,0 +1,29 @@
+@charset "UTF-8";
+
+* {font-family:Helvetica,Sans-serif;}
+
+@font-face {
+  font-family: 'emab';
+  src: url('emab.eot');
+  src: url('emab.eot?#iefix') format('embedded-opentype'),
+       url('emab.woff') format('woff'),
+       url('emab.ttf') format('truetype'),
+       url('emab.svg#emab') format('svg');
+  font-weight: normal; font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  font-family: emab;
+  font-style: normal;
+  speak: none;
+  display: inline-block;
+  width: 1.1em;
+  margin-right: .1em;
+  text-align: center;
+}
+
+.true:before { content: "y"; } /* '\79' */
+.false:before { content: "n"; } /* '\6e' */
+
+.true {color:green;}
+.false {color:red;}

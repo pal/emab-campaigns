@@ -11,3 +11,7 @@ $ cap deploy:setup
 
 And then:
 $ cap deploy
+
+
+To run locally:
+$ ruby app.rb
