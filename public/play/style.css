@@ -1,0 +1,22 @@
+html, body {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+	margin:0;
+	
+	cursor: none;
+	overflow:hidden;
+}
+/*this is what we want the div to look like*/
+div.fullscreen{
+  display:block;
+
+  /*set the div in the top-left corner of the screen*/
+  position:absolute;
+  top:0;
+  left:0;
+  
+  /*set the width and height to 100% of the screen*/
+  width:841;
+  height:595;
+}

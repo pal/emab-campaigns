@@ -12,6 +12,24 @@ else
   DATA_DIR = '/tmp/emab-img/'
 end
 
+get '/play' do
+  send_file File.join(settings.public_folder, 'play/index.html')
+end
+
+get '/play2' do
+  File.read(settings.public_folder, 'play/index.html')
+end
+
+get '/play3' do
+  redirect '/play/index.html'
+end
+
+get '/current_folder.json' do
+  content_type :json
+  send_file File.join(settings.public_folder, 'current_folder.json')
+#  { :key1 => 'value1', :key2 => 'value2' }.to_json
+end
+
 get '/' do
   @campaigns = get_week_data_results
   @current_week = get_current_week
@@ -40,7 +58,7 @@ def get_zip(url, filename)
 end
 
 def d(str)
-# puts str
+  puts str
 end
 
 def has_zip(url)
@@ -80,7 +98,8 @@ def get_week_data_results
   # {'url'=>'', 'url'=>'', 'url'=>'', }
 
   # helped by http://rubular.com/
-  regex = /kampanj\s?v\s?(?<w1>\d{1,2})-(?<w2>\d{1,2})\s(?:.)*(?<year>\d{4})+?/i
+  regex = /kampanj\s?v\s?(?<w1>\d{1,2})-(?<w2>\d{1,2})\s(?:.)*(?<year>\d{4})+?/i # only 1.9
+  regex = /kampanj\s?v\s?(\d{1,2})-(\d{1,2})\s(?:.)*(\d{4})+?/i # for 1.8
   root_url = 'http://www.emab.org/Bazment/Intranet/sv/'
   
   doc = Nokogiri::HTML(open(root_url + 'Kampanjer.aspx'))
@@ -95,26 +114,28 @@ def get_week_data_results
     
     if link.content =~ regex
       m = regex.match(link.content)
-      w1 = m[:w1].to_i
-      w2 = m[:w2].to_i
+      w1 = m[1].to_i # 1.9: m[:w1]
+      w2 = m[2].to_i
+      year = m[3].to_i
       
       week = "#{w1}-#{w2}"
 
-      zipurl = "http://store.printley.se/pickup/printley/EMAB_#{week}.zip"
+      zipurl = "http://store.printley.se/pickup/printley/EMAB_v#{week}.zip"
       zip_dir = "#{DATA_DIR}_zipdir"
       local_zip = "#{zip_dir}/EMAB_#{week}.zip"
-      unzip_dir = "#{DATA_DIR}_img_input/#{m[:year]}/#{week}"
+      unzip_dir = "#{DATA_DIR}_img_input/#{year}/#{week}"
       unzipped_img_dir = "#{unzip_dir}/EMAB_#{week}"
-      img_output_dir = "#{DATA_DIR}_img_output/#{m[:year]}/#{week}"
+      img_output_base_dir = "#{DATA_DIR}_img_output"
+      img_output_dir = "#{img_output_base_dir}/#{year}/#{week}"
       
       item['week_start'] = w1
       item['week_end'] = w2
-      item['year'] = m[:year]
+      item['year'] = year
       item['zipurl'] = zipurl
       item['is_active_campaign'] = false
       item['has_images'] = false
       
-      d("Testing #{m[:year]} - #{week}")
+      d("Testing #{year} - #{week}")
       if (has_zip(zipurl))
         d("#{week} has remote zip")
         if (!File.exists?(local_zip))
@@ -123,19 +144,21 @@ def get_week_data_results
           get_zip(zipurl, local_zip)
           `mkdir -p #{unzip_dir}`
           `unzip -o #{local_zip} -d #{unzip_dir}`
-          d "Unzipped remote file to #{unzip_dir}"
+          d "Unzipped remote file #{local_zip} to #{unzip_dir}"
           
           # rename files
           count = 1
-          Dir.glob(unzipped_img_dir + "/*").sort.each do |f|
-            File.rename(f, unzipped_img_dir + "/" + ("%04d" % count) + File.extname(f))
+#          Dir.glob(unzipped_img_dir + "/*").sort.each do |f|
+					Dir["#{unzip_dir}/*/*"].reject{ |f| f["#{unzip_dir}/*/__MACOSX/*"] }.sort.each do |f|
+            d f
+            File.rename(f, File.dirname(f) + "/IMG_" + ("%04d" % count) + File.extname(f))
             count += 1
           end
           
           # convert file to suit screen display (requires imagemagick)
           `mkdir -p #{img_output_dir}`
           # out TVs have a resolution of 1366x768, change to this?
-          `mogrify -format jpg -path #{img_output_dir} -quality 60 -size 1920x1080 #{unzipped_img_dir}/*`
+          `mogrify -format jpg -path #{img_output_dir} -quality 60 -size 1920x1080 #{unzip_dir}/*/IMG_*`
         end
         
         if (File.exists?(img_output_dir))
@@ -148,8 +171,8 @@ def get_week_data_results
       if ((w1..w2).include?(week_number))
         item['is_active_campaign'] = true
         
-        aFile = File.new("#{DATA_DIR}current_folder.json", "w")
-        aFile.write("{current_folder:\"#{week}\"}\n")
+        aFile = File.new(File.join(settings.public_folder, 'current_folder.json'), "w")
+        aFile.write("{current_folder:\"#{year}/#{week}\",image_count:#{item['image_count']}}\n")
         aFile.close
       end
       

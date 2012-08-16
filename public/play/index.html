@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us">
+<head>
+<title>Motell Ålleberg Kampanjer</title>
+<meta http-equiv="refresh" content="3600">
+<link href="style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="jquery.jcarousel.min.js"></script>
+<link rel="stylesheet" type="text/css" href="jcarousel-skin.css" />
+<script type="text/javascript">
+
+function getJSONP(url, success) {
+
+    var ud = '_' + +new Date,
+        script = document.createElement('script'),
+        head = document.getElementsByTagName('head')[0] 
+               || document.documentElement;
+
+    window[ud] = function(data) {
+        head.removeChild(script);
+        success && success(data);
+    };
+
+    //script.src = url.replace('callback=?', 'callback=' + ud);
+    head.appendChild(script);
+}
+
+
+
+jQuery(document).ready(function() {
+	
+	getJSONP('/current_folder.json', function(data){
+	    alert(data);
+	});
+	
+	jQuery.getJSON('/current_folder.json', function(json) {
+	   alert("current_folder: " + json.current_folder);
+	   alert("image_count: " + json.image_count);
+	 });
+	alert('wtf?');
+	
+	var maxcnt = 21; // number of images
+	var w = document.documentElement.clientWidth;
+	var h = document.documentElement.clientHeight;
+	jQuery("div.fullscreen").css('width',w);
+	jQuery("div.fullscreen").css('height',h);
+	
+	for (i=1;i<=maxcnt;i++) {
+		idx = 10000+i+"";
+		jQuery("#mycarousel").append('<li><img src="img/IMG_'+idx.substring(1,5)+'.jpg" width="'+w+'" height="'+h+'" /></li>');		
+	}
+    jQuery('#mycarousel').jcarousel({
+        auto: 10, // seconds to show each image
+				scroll:1,
+				visible:1,
+				animation:1600,//'slow',
+//				easing: 'easeInCubic',
+				wrap: 'circular',
+        itemFallbackDimension: w
+    });
+});
+
+</script>
+</head>
+<body>
+  <ul id="mycarousel" class="fullscreen">
+  </ul>
+</body>
+</html>
